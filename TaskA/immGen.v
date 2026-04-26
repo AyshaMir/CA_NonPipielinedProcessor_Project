@@ -8,7 +8,7 @@ wire [6:0] opcode = instruction[6:0];
 
 always @(*) begin
     case (opcode)
-        // I-type: ADDI, LW, JALR
+        // I-type: ADDI, LOAD, JALR
         7'b0010011,
         7'b0000011,
         7'b1100111:
@@ -29,7 +29,11 @@ always @(*) begin
                    instruction[11:8],
                    1'b0};
 
-        // J-type: JAL
+        // U-type : LUI
+        7'b0110111:
+            Imm = {instruction[31:12], 12'b0};
+
+        // J-type : JAL
         7'b1101111:
             Imm = {{11{instruction[31]}},
                    instruction[31],

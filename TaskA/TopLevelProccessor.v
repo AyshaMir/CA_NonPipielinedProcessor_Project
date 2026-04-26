@@ -1,6 +1,8 @@
 `timescale 1ns / 1ps
 
-module TopLevelProcessor(
+module TopLevelProcessor #(
+    parameter MEMFILE = ""
+)(
     input  wire clk,
     input  wire rst,
     input  wire [15:0] sw,
@@ -28,6 +30,7 @@ module TopLevelProcessor(
     wire Branch;
     wire Jump;
     wire Jalr;
+    wire Lui;
     wire [1:0] ALUOp;
     wire [3:0] ALUControl;
 
@@ -54,6 +57,21 @@ module TopLevelProcessor(
     wire [31:0] LEDReadData;
     wire [31:0] MemReadData;
 
+    // Debug register-number wires
+    wire [4:0] rs1;
+    wire [4:0] rs2;
+    wire [4:0] rd;
+
+    assign rs1 = instruction[19:15];
+    assign rs2 = instruction[24:20];
+    assign rd  = instruction[11:7];
+
+    // Branch debug / decision wires
+    wire branch_beq;
+    wire branch_blt;
+    wire branch_bge;
+    wire branch_taken;
+
     // Writeback
     wire [31:0] WriteData;
 
@@ -67,7 +85,9 @@ module TopLevelProcessor(
         .PC(PC)
     );
 
-    instructionMemory imem (
+    instructionMemory #(
+        .MEMFILE(MEMFILE)
+    ) imem (
         .instAddress(PC),
         .instruction(instruction)
     );
@@ -83,10 +103,21 @@ module TopLevelProcessor(
         .branchTarget(branchTarget)
     );
 
-    assign PCSrc = Branch & Zero;
+    // Branch type decode
+    assign branch_beq = (instruction[14:12] == 3'b000);
+    assign branch_blt = (instruction[14:12] == 3'b100);
+    assign branch_bge = (instruction[14:12] == 3'b101);
+
+    // Final branch decision
+    assign branch_taken =
+        (branch_beq && (readdata1 == readdata2)) ||
+        (branch_blt && ($signed(readdata1) <  $signed(readdata2))) ||
+        (branch_bge && ($signed(readdata1) >= $signed(readdata2)));
+
+    assign PCSrc = Branch & branch_taken;
 
     // jal  : PC = PC + imm
-    // beq  : PC = PC + imm when taken
+    // beq/blt/bge : PC = PC + imm when taken
     // jalr : PC = (rs1 + imm) & ~1
     assign PC_Next = Jalr ? {ALUResult[31:1], 1'b0} :
                      ((Jump || PCSrc) ? branchTarget : PC_add4);
@@ -94,7 +125,7 @@ module TopLevelProcessor(
     // =========================
     // DECODE
     // =========================
-    main_control ctrl (
+    main_control main_ctrl (
         .opcode(instruction[6:0]),
         .RegWrite(RegWrite),
         .ALUSrc(ALUSrc),
@@ -104,6 +135,7 @@ module TopLevelProcessor(
         .Branch(Branch),
         .Jump(Jump),
         .Jalr(Jalr),
+        .Lui(Lui),
         .ALUOp(ALUOp)
     );
 
@@ -152,7 +184,7 @@ module TopLevelProcessor(
     // =========================
     // ADDRESS DECODING
     // =========================
-    adressdecoder decoder (
+    adressdecoder add_decoder (
         .address(ALUResult),
         .DataMemSelect(DataMemSelect),
         .LEDSelect(LEDSelect),
@@ -207,9 +239,9 @@ module TopLevelProcessor(
 
     // =========================
     // WRITEBACK
-    // jal / jalr write PC+4
     // =========================
-    assign WriteData = (Jump || Jalr) ? PC_add4 :
-                       (MemtoReg ? MemReadData : ALUResult);
+    assign WriteData = Lui ? Imm :
+                       ((Jump || Jalr) ? PC_add4 :
+                       (MemtoReg ? MemReadData : ALUResult));
 
 endmodule

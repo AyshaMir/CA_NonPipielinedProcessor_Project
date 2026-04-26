@@ -1,7 +1,7 @@
 `timescale 1ns / 1ps
 module datamemory(
     input clk,
-    input rst,
+    input rst,                  // kept for compatibility, not used
     input MemRead,
     input MemWrite,
     input [2:0] funct3,
@@ -10,16 +10,11 @@ module datamemory(
     output reg [31:0] read_data
 );
 
-    reg [7:0] mem [0:2047];
-    integer i;
-    wire [10:0] addr = address[10:0];
+    reg [7:0] mem [0:511];
+    wire [8:0] addr = address[8:0];
 
-    always @(posedge clk or posedge rst) begin
-        if (rst) begin
-            for (i = 0; i < 2048; i = i + 1)
-                mem[i] <= 8'b0;
-        end
-        else if (MemWrite) begin
+    always @(posedge clk) begin
+        if (MemWrite) begin
             case (funct3)
                 3'b000: mem[addr] <= write_data[7:0]; // SB
 
@@ -33,6 +28,10 @@ module datamemory(
                     mem[addr + 1] <= write_data[15:8];
                     mem[addr + 2] <= write_data[23:16];
                     mem[addr + 3] <= write_data[31:24];
+                end
+
+                default: begin
+                    // do nothing
                 end
             endcase
         end

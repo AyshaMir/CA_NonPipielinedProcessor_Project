@@ -1,8 +1,17 @@
-module instructionMemory(
+`timescale 1ns / 1ps
+module instructionMemory #(
+    parameter MEMFILE = ""
+)(
     input  [31:0] instAddress,
     output reg [31:0] instruction
 );
+
     reg [7:0] memory [0:255];
+
+    initial begin
+        if (MEMFILE != "")
+            $readmemh(MEMFILE, memory);
+    end
 
     always @(*) begin
         instruction = {
@@ -12,4 +21,5 @@ module instructionMemory(
             memory[instAddress + 0]
         };
     end
+
 endmodule

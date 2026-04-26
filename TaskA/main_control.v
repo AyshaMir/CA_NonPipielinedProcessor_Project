@@ -8,6 +8,7 @@ module main_control(
     output reg Branch,
     output reg Jump,
     output reg Jalr,
+    output reg Lui,
     output reg [1:0] ALUOp
 );
 
@@ -18,6 +19,7 @@ module main_control(
     localparam OP_BRANCH = 7'b1100011;
     localparam OP_JAL    = 7'b1101111;
     localparam OP_JALR   = 7'b1100111;
+    localparam OP_LUI    = 7'b0110111;
 
     always @(*) begin
         RegWrite = 1'b0;
@@ -28,6 +30,7 @@ module main_control(
         Branch   = 1'b0;
         Jump     = 1'b0;
         Jalr     = 1'b0;
+        Lui      = 1'b0;
         ALUOp    = 2'b00;
 
         case (opcode)
@@ -64,15 +67,20 @@ module main_control(
             end
 
             OP_JAL: begin
-                RegWrite = 1'b1;   // rd gets PC+4
+                RegWrite = 1'b1;
                 Jump     = 1'b1;
             end
 
             OP_JALR: begin
-                RegWrite = 1'b1;   // rd gets PC+4
+                RegWrite = 1'b1;
                 Jalr     = 1'b1;
-                ALUSrc   = 1'b1;   // rs1 + imm
-                ALUOp    = 2'b00;  // use ADD in ALU
+                ALUSrc   = 1'b1;
+                ALUOp    = 2'b00;
+            end
+
+            OP_LUI: begin
+                RegWrite = 1'b1;
+                Lui      = 1'b1;
             end
 
             default: begin
@@ -84,6 +92,7 @@ module main_control(
                 Branch   = 1'b0;
                 Jump     = 1'b0;
                 Jalr     = 1'b0;
+                Lui      = 1'b0;
                 ALUOp    = 2'b00;
             end
         endcase
