@@ -2,10 +2,10 @@
 module switches(
     input clk,
     input rst,
-    input [31:0] writeData,     // not used
-    input writeEnable,          // not used
+    input [31:0] writeData,
+    input writeEnable,        
     input readEnable,
-    input [29:0] memAddress,    // not used
+    input [29:0] memAddress,    
     input [15:0] sw,
     output reg [31:0] readData
 );

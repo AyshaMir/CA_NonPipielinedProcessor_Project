@@ -7,22 +7,19 @@ module taskA_tb;
     reg [15:0] sw;
     wire [15:0] leds;
 
-    // Instantiate DUT
-    TopLevelProcessor uut (
+    //MEMFILE parameter
+    TopLevelProcessor #(
+        .MEMFILE("countdown.mem")
+    ) cpu (
         .clk(clk),
         .rst(rst),
         .sw(sw),
         .leds(leds)
     );
 
-    // Clock: 10ns period
     always #5 clk = ~clk;
 
     initial begin
-        // Load instruction memory
-        $readmemh("countdown.mem", uut.imem.memory);
-
-        // Init
         clk = 0;
         rst = 1;
         sw  = 16'd0;
@@ -41,7 +38,6 @@ module taskA_tb;
         $display("Switch set to 5, starting countdown...");
 
         // Wait enough cycles for countdown to complete
-        // idle reads sw, calls countdown, loops 5 times + overhead ~ 30 cycles
         repeat(60) begin
             @(posedge clk);
             $display("t=%0t | sw=%0d | leds=%0d", $time, sw, leds);

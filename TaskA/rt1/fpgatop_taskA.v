@@ -1,16 +1,16 @@
 `timescale 1ns / 1ps
 
 module fpgatop_taskA(
-    input  wire clk,          // 100 MHz board clock
-    input  wire rst,          // reset button
-    input  wire [15:0] sw,    // switches
-    output wire [15:0] leds   // LEDs
+    input  wire clk,     
+    input  wire rst,       
+    input  wire [15:0] sw,  
+    output wire [15:0] leds  
 );
 
     reg [25:0] clk_div_counter = 26'd0;
     reg slow_clk = 1'b0;
 
-    // 100 MHz -> 2 Hz processor clock
+    // 100 MHz -> 2 Hz
     always @(posedge clk or posedge rst) begin
         if (rst) begin
             clk_div_counter <= 26'd0;
