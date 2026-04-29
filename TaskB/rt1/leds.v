@@ -4,8 +4,8 @@ module leds(
     input rst,
     input [31:0] writeData,
     input writeEnable,
-    input readEnable,           // not used (write-only)
-    input [29:0] memAddress,    // not used 
+    input readEnable, 
+    input [29:0] memAddress, 
     output reg [31:0] readData,
     output reg [15:0] led_out
 );
