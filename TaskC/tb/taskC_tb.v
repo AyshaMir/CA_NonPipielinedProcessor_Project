@@ -20,15 +20,15 @@ module taskC_tb;
     initial begin
         clk = 0;
         rst = 1;
-        sw  = 16'd6;
+        sw  = 16'd4;
     
         repeat(2) @(posedge clk);
         rst = 0;
     
-        wait(leds == 16'h62D0);
+        wait(leds == 16'h4018);
     
         $display("Final LEDs/display value = %h", leds);
-        $display("Expected final value      = 62D0");
+        $display("Expected final value      = 4018");
         $display("TASK C PASS");
     
         $finish;
