@@ -2,7 +2,6 @@
 .equ led_address,     256
 .equ switch_address,  512
 
-.section .text
 .globl _start
 
 _start:
@@ -12,9 +11,7 @@ _start:
 
     sw x0, 0(x4)            # clear LEDs
 
-# =====================
 # IDLE STATE
-# =====================
 idle_state:
     lw x7, 0(x5)            # read switches
     beq x7, x0, idle_state  # stay if 0
@@ -24,9 +21,7 @@ idle_state:
 
     beq x0, x0, idle_state  # unconditional jump
 
-# =====================
 # COUNTDOWN FUNCTION
-# =====================
 countdown:
     addi x2, x2, -12
     sw x1, 8(x2)
