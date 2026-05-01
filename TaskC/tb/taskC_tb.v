@@ -20,24 +20,41 @@ module taskC_tb;
     initial begin
         clk = 0;
         rst = 1;
-        sw  = 16'd4;
-    
+        sw  = 16'd0;
+
         repeat(2) @(posedge clk);
         rst = 0;
-    
-        wait(leds == 16'h4018);
-    
+
+        // TEST 1: 0! = 1
+        wait(leds == 16'h0001);
+
+        $display("================================");
+        $display("0! TEST PASSED");
         $display("Final LEDs/display value = %h", leds);
-        $display("Expected final value      = 4018");
+        $display("Expected final value = 0001");
+        $display("================================");
+
+        repeat(5) @(posedge clk);
+
+        // TEST 2: 4! = 24
+        sw = 16'd4;
+
+        wait(leds == 16'h4018);
+
+        $display("================================");
+        $display("4! TEST PASSED");
+        $display("Final LEDs/display value = %h", leds);
+        $display("Expected final value = 4018");
+        $display("================================");
+
         $display("TASK C PASS");
-    
         $finish;
     end
 
     always @(posedge clk) begin
         if (cpu.LEDWriteEnable) begin
-            $display("time=%0t PC=%h raw_display=%h", 
-                     $time, cpu.PC, cpu.readdata2[15:0]);
+            $display("time=%0t PC=%h sw=%0d raw_display=%h", 
+                     $time, cpu.PC, sw, cpu.readdata2[15:0]);
         end
     end
 

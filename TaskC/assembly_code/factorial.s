@@ -13,12 +13,12 @@ _start:
 # IDLE STATE
 idle_state:
     lw x7, 0(x5)            # read switches
-    beq x7, x0, idle_state  # wait for non-zero input
 
     add x10, x7, x0         # x10 = n
-    jal x1, factorial
+    jal x1, factorial       # calculate factorial
 
-    beq x0, x0, idle_state
+    beq x0, x0, idle_state  # repeat forever
+
 
 # FACTORIAL FUNCTION
 # input: x10 = n
@@ -35,8 +35,13 @@ factorial:
     sw x21, 0(x2)
 
     add x8, x10, x0         # x8 = n
+
+    # BASE CASE: 0! = 1
+    beq x8, x0, fact_zero
+
     addi x18, x0, 1         # i = 1
     addi x19, x0, 1         # result = 1
+
 
 fact_loop:
     # PACK: [i << 12] | result
@@ -44,7 +49,7 @@ fact_loop:
     or   x21, x20, x19      # combine with factorial
     sw   x21, 0(x4)         # send to LEDs + display
 
-    beq x18, x8, fact_done  # if i == n → done
+    beq x18, x8, fact_done  # if i == n, done
 
     addi x18, x18, 1        # i++
 
@@ -54,14 +59,26 @@ fact_loop:
 
 mul_loop:
     beq x21, x0, mul_done
-    add x20, x20, x18       # temp += i
+    add  x20, x20, x18      # temp += i
     addi x21, x21, -1
-    beq x0, x0, mul_loop
+    beq  x0, x0, mul_loop
 
 mul_done:
     add x19, x20, x0        # result = temp
-
     beq x0, x0, fact_loop
+
+
+fact_zero:
+    addi x18, x0, 0         # i = 0
+    addi x19, x0, 1         # result = 1
+
+    # PACK: [0 << 12] | 1 = 0001
+    slli x20, x18, 12
+    or   x21, x20, x19
+    sw   x21, 0(x4)         # display 0! = 1
+
+    beq x0, x0, fact_done
+
 
 fact_done:
     add x10, x19, x0        # return result
